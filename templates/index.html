@@ -1,0 +1,176 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Simple Google Maps API Example</title>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?v=3.7&sensor=false&language=en"></script>
+	<script src="http://maps.google.com/maps/api/js?sensor=set_to_true_or_false"></script>
+
+  </head>
+  <body >
+<script>
+    var simpleGoogleMapsApiExample = simpleGoogleMapsApiExample || {};
+
+simpleGoogleMapsApiExample.map = function (mapDiv, latitude, longitude, accuracy) {
+  "use strict";
+
+  var createMap = function (mapDiv, coordinates) {
+    var mapOptions = {
+      center: coordinates,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      zoom: 15
+    };
+
+    return new google.maps.Map(mapDiv, mapOptions);
+  };
+
+  var addMarker = function (map, coordinates) {
+    var markerOptions = {
+      clickable: false,
+      map: map,
+      position: coordinates
+    };
+
+    return new google.maps.Marker(markerOptions);
+  };
+
+  var addCircle = function (map, coordinates, accuracy) {
+    var circleOptions = {
+      center: coordinates,
+      clickable: false,
+      fillColor: "blue",
+      fillOpacity: 0.15,
+      map: map,
+      radius: accuracy,
+      strokeColor: "blue",
+      strokeOpacity: 0.3,
+      strokeWeight: 2
+    };
+
+    return new google.maps.Circle(circleOptions);
+  };
+
+  var infoWindowVisible = (function () {
+    var currentlyVisible = false;
+
+    return function (visible) {
+      if (visible !== undefined) {
+        currentlyVisible = visible;
+      }
+
+      return currentlyVisible;
+    };
+  }());
+
+  var addInfoWindowListeners = function (map, marker, infoWindow) {
+    google.maps.event.addListener(marker, "click", function () {
+      if (infoWindowVisible()) {
+        infoWindow.close();
+        infoWindowVisible(false);
+      } else {
+        infoWindow.open(map, marker);
+        infoWindowVisible(true);
+      }
+    });
+
+    google.maps.event.addListener(infoWindow, "closeclick", function () {
+      infoWindowVisible(false);
+    });
+  };
+
+  var addInfoWindow = function (map, marker, address) {
+    var infoWindowOptions = {
+      content: address,
+      maxWidth: 200
+    };
+    var infoWindow = new google.maps.InfoWindow(infoWindowOptions);
+
+    addInfoWindowListeners(map, marker, infoWindow);
+
+    return infoWindow;
+  };
+
+  var initialize = function (mapDiv, latitude, longitude, accuracy) {
+    var coordinates = new google.maps.LatLng(latitude, longitude);
+    var map = createMap(mapDiv, coordinates);
+    var marker = addMarker(map, coordinates);
+    var geocoder = new google.maps.Geocoder();
+
+    addCircle(map, coordinates, accuracy);
+
+    geocoder.geocode({
+      location: coordinates
+    }, function (results, status) {
+      if (status === google.maps.GeocoderStatus.OK && results[0]) {
+        marker.setClickable(true);
+        addInfoWindow(map, marker, results[0].formatted_address);
+      }
+    });
+  };
+
+  initialize(mapDiv, latitude, longitude, accuracy);
+};
+
+function  getPlaces(f) {
+    geocoder = new google.maps.Geocoder();
+    alert(f)
+    var address = document.getElementsByName(f)[0].value;
+    geocoder.geocode( { 'address': address}, function(results, status) {
+    if (status == google.maps.GeocoderStatus.OK) {
+
+
+		alert("Latitude: "+results[0].geometry.location.lat());
+		alert("Longitude: "+results[0].geometry.location.lng());
+		simpleGoogleMapsApiExample.map($("#map")[0],results[0].geometry.location.lat(),results[0].geometry.location.lng() , 70);
+
+      }
+
+      else {
+        alert("Geocode was not successful for the following reason: " + status);
+      }
+    });
+
+
+}
+</script>
+
+<style>
+
+#map {
+	border: 4px solid black;
+	height: 400px;
+	width: 400px;
+}
+
+
+    </style>
+
+
+
+<h1>Ass 3 </h1>
+ <h3>write your text</h3>
+
+    <form action= "/index/" method="GET" id="myform">
+	<textarea cols="40" rows="15" name="myText" id="myText">We live in tel aviv but we want to live in new york</textarea>
+        <br/>
+	<input type="submit" value="Find" id="submit" name="submit">
+    </form>
+
+    <h3>Places in text :</h3>
+        <p>Click to see location on the map</p>
+       {% for i in placeList %}
+           <input type="button" name="{{ i }}" value="{{ i }}" onclick="return getPlaces(this.name)">
+
+{% endfor %}
+<br/>
+
+
+
+
+	<div id="map"></div>
+
+
+
+  </body>
+</html>
